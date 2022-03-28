@@ -43,6 +43,16 @@ int mem_init(char const *mem_path, uint32_t *mem)
 
 int main(int argc, char const **argv)
 {
+  if (argc != 4)
+  {
+    printf("Usage: %s mem.bin reg.bin 0x0\n"
+           "mem.bin - path to hex dump of memory,\n"
+           "reg.bin - path to hex dump of registers\n"
+           "0x0     - PC (instruction pointer)\n",
+           argv[0]);
+    return -1;
+  }
+
   mem_init(argv[1], memory);
   mem_init(argv[2], reg_gp);
   if (1 != sscanf(argv[3], "%x", reg_pc))
