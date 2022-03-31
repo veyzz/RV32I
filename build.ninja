@@ -13,14 +13,15 @@ rule cc_debug
 rule link_debug
   command = gcc $lflags -g $in -o $out
 
-build ${builddir}/release/visual.o: cc src/visual.c
+build ${builddir}/release/memory.o: cc src/memory.c
 build ${builddir}/release/hart.o: cc src/hart.c
 build ${builddir}/release/rv32i.o: cc src/rv32i.c
-build ${builddir}/release/rv32i: link ${builddir}/release/rv32i.o ${builddir}/release/hart.o ${builddir}/release/visual.o
-build ${builddir}/debug/visual.o: cc_debug src/visual.c
+build ${builddir}/release/rv32i: link ${builddir}/release/rv32i.o ${builddir}/release/hart.o ${builddir}/release/memory.o
+
+build ${builddir}/debug/memory.o: cc_debug src/memory.c
 build ${builddir}/debug/hart.o: cc_debug src/hart.c
 build ${builddir}/debug/rv32i.o: cc_debug src/rv32i.c
-build ${builddir}/debug/rv32i: link_debug ${builddir}/debug/rv32i.o ${builddir}/debug/hart.o ${builddir}/debug/visual.o
+build ${builddir}/debug/rv32i: link_debug ${builddir}/debug/rv32i.o ${builddir}/debug/hart.o ${builddir}/debug/memory.o
 
 default ${builddir}/debug/rv32i
 

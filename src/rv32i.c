@@ -1,64 +1,41 @@
 #define MAIN_FILE
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
+#include <stdio.h>
 #include "memory.h"
 #include "hart.h"
-#include "visual.h"
-
-int mem_init(char const *mem_path, uint32_t *mem)
-{
-	int fd;
-	struct stat filestat;
-	void *data = NULL;
-
-	fd = open(mem_path, O_RDWR | O_SYNC);
-
-  if (fd == -1 || fstat(fd, &filestat) == -1)
-  {
-		perror("error occured");
-    return -1;
-  }
-
-	data = mmap(NULL, filestat.st_size, PROT_READ, MAP_SHARED, fd, 0);
-	if (data == MAP_FAILED)
-	{
-		perror("mmap failed");
-		return -1;
-	}
-
-  memcpy(mem, data, filestat.st_size);
-
-  munmap(data, filestat.st_size);
-
-  return 0;
-}
 
 int main(int argc, char const **argv)
 {
   if (argc != 4)
   {
     printf("Usage: %s mem.bin reg.bin 0x0\n"
-           "mem.bin - path to hex dump of memory,\n"
-           "reg.bin - path to hex dump of registers\n"
-           "0x0     - PC (instruction pointer)\n",
+           "  mem.bin - path to hex dump of memory,\n"
+           "  reg.bin - path to hex dump of registers\n"
+           "  0x0     - PC (instruction pointer)\n",
            argv[0]);
     return -1;
   }
 
-  mem_init(argv[1], memory);
-  mem_init(argv[2], reg_gp);
-  if (1 != sscanf(argv[3], "%x", reg_pc))
+  if (0 > mem_init(argv[1]))
+  {
+    printf("failed to read memory\n");
     return -1;
+  }
 
-  mem_print(memory, 8);
+  if (0 > reg_init(argv[2]))
+  {
+    printf("failed to read registers\n");
+    return -1;
+  }
+
+  if (1 != sscanf(argv[3], "%x", reg_pc))
+  {
+    printf("failed to get PC\n");
+    return -1;
+  }
+
+  mem_print(8);
   reg_print();
 
   while (1)
@@ -67,7 +44,7 @@ int main(int argc, char const **argv)
       break;
   };
 
-  mem_print(memory, 8);
+  mem_print(8);
   reg_print();
 
   return 0;

@@ -70,5 +70,11 @@ IS_EXTERN uint32_t reg_gp[REG_GP_XLEN];
 IS_EXTERN uint32_t reg_pc[REG_PC_XLEN];
 #undef IS_EXTERN
 
+int mem_init(char const *mem_path);
+int reg_init(char const *reg_path);
+
+int mem_print(size_t size);
+int reg_print();
+
 #endif /* __MEMORY_H__ */
 
