@@ -165,6 +165,72 @@ int fetch(uint8_t *ip)
       }
       break;
 
+    case 0b0000011:
+
+      switch(GET_FUNCT3(instr))
+      {
+        case 0x0:
+          reg_gp[GET_RD(instr)] = \
+            *(int8_t *) \
+             (memory + (reg_gp[GET_RS1(instr)] + GET_IMM_I(instr)) % MEMSIZE);
+          break;
+
+        case 0x1:
+          reg_gp[GET_RD(instr)] = \
+            *(int16_t *) \
+             (memory + (reg_gp[GET_RS1(instr)] + GET_IMM_I(instr)) % MEMSIZE);
+          break;
+
+        case 0x2:
+          reg_gp[GET_RD(instr)] = \
+            *(uint32_t *) \
+             (memory + (reg_gp[GET_RS1(instr)] + GET_IMM_I(instr)) % MEMSIZE);
+          break;
+
+        case 0x4:
+          reg_gp[GET_RD(instr)] = \
+            *(uint8_t *) \
+             (memory + (reg_gp[GET_RS1(instr)] + GET_IMM_I(instr)) % MEMSIZE);
+          break;
+
+        case 0x5:
+          reg_gp[GET_RD(instr)] = \
+            *(uint16_t *) \
+             (memory + (reg_gp[GET_RS1(instr)] + GET_IMM_I(instr)) % MEMSIZE);
+          break;
+
+        default:
+          return 1;
+      }
+      break;
+
+    case 0b0100011:
+
+      switch(GET_FUNCT3(instr))
+      {
+        case 0x0:
+          memcpy(memory + (reg_gp[GET_RS1(instr)] + GET_IMM_S(instr)) % MEMSIZE,
+                 reg_gp + GET_RS2(instr),
+                 sizeof(uint8_t));
+          break;
+
+        case 0x1:
+          memcpy(memory + (reg_gp[GET_RS1(instr)] + GET_IMM_S(instr)) % MEMSIZE,
+                 reg_gp + GET_RS2(instr),
+                 sizeof(uint16_t));
+          break;
+
+        case 0x2:
+          memcpy(memory + (reg_gp[GET_RS1(instr)] + GET_IMM_S(instr)) % MEMSIZE,
+                 reg_gp + GET_RS2(instr),
+                 sizeof(uint32_t));
+          break;
+
+        default:
+          return 1;
+      }
+      break;
+
     case 0b1100011:
 
       switch(GET_FUNCT3(instr))
