@@ -40,7 +40,7 @@ int main(int argc, char const **argv)
 
   while (1)
   {
-    if (fetch(memory[reg_pc[0]]))
+    if (fetch(memory + reg_pc[0]))
       break;
   };
 

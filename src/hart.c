@@ -3,8 +3,12 @@
 #include "memory.h"
 #include "hart.h"
 
-int fetch(uint32_t instr)
+int fetch(uint8_t *ip)
 {
+  uint32_t instr = *(uint32_t *)ip;
+
+  reg_gp[REG_X0] = 0;
+
   switch (GET_OPCODE(instr))
   {
     case 0b0110011:
@@ -90,7 +94,7 @@ int fetch(uint32_t instr)
       return 1;
   }
 
-  reg_pc[0]++;
+  reg_pc[0] += sizeof(uint32_t);
 
   return 0;
 }

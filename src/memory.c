@@ -45,7 +45,7 @@ int reg_init(char const *reg_path)
   int fd;
   struct stat filestat;
   void *data = NULL;
-  size_t reg_gp_size = (REG_GP_XLEN - 1) * sizeof(reg_gp[0]);
+  size_t reg_gp_size = (REG_GP_COUNT - 1) * sizeof(reg_gp[0]);
 
   fd = open(reg_path, O_RDWR | O_SYNC);
 
@@ -79,19 +79,16 @@ int reg_init(char const *reg_path)
 
 int mem_print(size_t size)
 {
-  uint8_t *p = (uint8_t *)memory;
-  size_t p_size = sizeof(memory[0]) * size;
-  size_t i, j;
+  size_t i;
 
-  printf("[ MEMORY ]\n");
-  for (i = 0, j = 0; i < p_size; i++, j++)
+  printf("[ MEMORY ]");
+  for (i = 0; i < size; i++)
   {
-    if (j == 16)
+    if (i % 16 == 0)
     {
       printf("\n");
-      j = 0;
     }
-    printf("%.2x ", p[i]);
+    printf("%.2x ", memory[i]);
   }
   printf("\n");
 
@@ -105,7 +102,7 @@ int reg_print()
   size_t i;
 
   printf("[ REGISTERS ]\n");
-  for (reg = REG_X0; reg < REG_GP_XLEN; reg++)
+  for (reg = REG_X0; reg < REG_GP_COUNT; reg++)
   {
     printf("REG_X%d:%c ", (int)reg, (reg < 10) ? ' ' : '\0');
     p = (uint8_t *)(reg_gp + reg);

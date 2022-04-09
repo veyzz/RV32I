@@ -1,20 +1,12 @@
 #ifndef __MEMORY_H__
 #define __MEMORY_H__
 
-#define MEMSIZE (1<<12) /* 4K */
-
-#define REG_ZERO REG_X0 /* Hard-wired zero */
-#define REG_RA REG_X1 /* Return address  */
-#define REG_SP REG_X2 /* Stack pointer  */
-#define REG_GP REG_X3 /* Global pointer */
-#define REG_TP REG_X4 /* Thread pointer */
-#define REG_T0 REG_X5 /* Temporary/alternate link register */
-#define REG_T1 REG_X6 /* Temporary register */
-#define REG_T2 REG_X7 /* Temporary register */
-#define REG_S0 REG_X8 /* Frame pointer */
-#define REG_S1 REG_X9 /* Saved register */
-#define REG_A0 REG_X10 /* Function arguments/return values */
-#define REG_A1 REG_X11 /* Function arguments */
+#define XLEN 32
+#if 0 /* max memsize */
+#define MEMSIZE (1UL << XLEN)
+#else
+#define MEMSIZE (1 << 12) /* 4K */
+#endif
 
 enum
 {
@@ -50,13 +42,13 @@ enum
   REG_X29,
   REG_X30,
   REG_X31,
-  REG_GP_XLEN
+  REG_GP_COUNT
 };
 
 enum
 {
   REG_PC,
-  REG_PC_XLEN
+  REG_PC_COUNT
 };
 
 /* Memory Globals */
@@ -65,9 +57,9 @@ enum
 #else /* MAIN_FILE */
 #define IS_EXTERN
 #endif /* MAIN_FILE */
-IS_EXTERN uint32_t memory[MEMSIZE];
-IS_EXTERN uint32_t reg_gp[REG_GP_XLEN];
-IS_EXTERN uint32_t reg_pc[REG_PC_XLEN];
+IS_EXTERN uint8_t  memory[MEMSIZE];
+IS_EXTERN uint32_t reg_gp[REG_GP_COUNT];
+IS_EXTERN uint32_t reg_pc[REG_PC_COUNT];
 #undef IS_EXTERN
 
 int mem_init(char const *mem_path);
