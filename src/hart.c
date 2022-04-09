@@ -302,6 +302,16 @@ int fetch(uint8_t *ip)
       }
       break;
 
+    case 0b0110111:
+
+      reg_gp[GET_RD(instr)] = GET_IMM_U(instr) << 12;
+      break;
+
+    case 0b0010111:
+
+      reg_gp[GET_RD(instr)] = reg_pc[0] + (GET_IMM_U(instr) << 12);
+      break;
+
     default:
       return 1;
   }
