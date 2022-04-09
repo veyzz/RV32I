@@ -165,6 +165,77 @@ int fetch(uint8_t *ip)
       }
       break;
 
+    case 0b1100011:
+
+      switch(GET_FUNCT3(instr))
+      {
+        case 0x0:
+          if (reg_gp[GET_RS1(instr)] == reg_gp[GET_RS2(instr)])
+          {
+            reg_pc[0] += GET_IMM_B(instr);
+          }
+          break;
+
+        case 0x1:
+          if (reg_gp[GET_RS1(instr)] != reg_gp[GET_RS2(instr)])
+          {
+            reg_pc[0] += GET_IMM_B(instr);
+          }
+          break;
+
+        case 0x4:
+          if ((int32_t)reg_gp[GET_RS1(instr)] < (int32_t)reg_gp[GET_RS2(instr)])
+          {
+            reg_pc[0] += GET_IMM_B(instr);
+          }
+          break;
+
+        case 0x5:
+          if ((int32_t)reg_gp[GET_RS1(instr)] >= (int32_t)reg_gp[GET_RS2(instr)])
+          {
+            reg_pc[0] += GET_IMM_B(instr);
+          }
+          break;
+
+        case 0x6:
+          if (reg_gp[GET_RS1(instr)] < reg_gp[GET_RS2(instr)])
+          {
+            reg_pc[0] += GET_IMM_B(instr);
+          }
+          break;
+
+        case 0x7:
+          if (reg_gp[GET_RS1(instr)] >= reg_gp[GET_RS2(instr)])
+          {
+            reg_pc[0] += GET_IMM_B(instr);
+          }
+          break;
+
+        default:
+          return 1;
+      }
+      break;
+
+    case 0b1101111:
+
+      reg_gp[GET_RD(instr)] = reg_pc[0] + sizeof(uint32_t);
+      reg_pc[0] += GET_IMM_J(instr);
+      break;
+
+    case 0b1100111:
+
+      switch(GET_FUNCT3(instr))
+      {
+        case 0x0:
+          reg_gp[GET_RD(instr)] = reg_pc[0] + sizeof(uint32_t);
+          reg_pc[0] = reg_gp[GET_RS1(instr)] + GET_IMM_I(instr);
+          break;
+
+        default:
+          return 1;
+      }
+      break;
+
     default:
       return 1;
   }
