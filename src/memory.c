@@ -16,7 +16,7 @@ int mem_init(char const *mem_path)
   struct stat filestat;
   void *data = NULL;
 
-  fd = open(mem_path, O_RDWR | O_SYNC);
+  fd = open(mem_path, O_RDONLY | O_SYNC);
 
   if (fd == -1 || fstat(fd, &filestat) == -1)
   {
@@ -47,7 +47,7 @@ int reg_init(char const *reg_path)
   void *data = NULL;
   size_t reg_gp_size = REG_GP_COUNT * sizeof(reg_gp[0]);
 
-  fd = open(reg_path, O_RDWR | O_SYNC);
+  fd = open(reg_path, O_RDONLY | O_SYNC);
 
   if (fd == -1 || fstat(fd, &filestat) == -1)
   {
@@ -75,6 +75,71 @@ int reg_init(char const *reg_path)
   close(fd);
 
   return filestat.st_size;
+}
+
+int mem_save(char const *mem_path)
+{
+  int fd;
+  size_t fsize;
+
+  fd = open(mem_path,
+            O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,
+            S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+
+  if (fd == -1)
+  {
+    perror("error occured");
+    return -1;
+  }
+
+  fsize = write(fd, memory, MEMSIZE);
+
+  close(fd);
+
+  if (fsize == -1)
+  {
+    perror("error occured");
+    return -1;
+  }
+  else if (fsize != MEMSIZE)
+  {
+    printf("mem: written only part of memory\n");
+  }
+
+  return fsize;
+}
+
+int reg_save(char const *reg_path)
+{
+  int fd;
+  size_t fsize;
+  size_t reg_gp_size = REG_GP_COUNT * sizeof(reg_gp[0]);
+
+  fd = open(reg_path,
+            O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,
+            S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+
+  if (fd == -1)
+  {
+    perror("error occured");
+    return -1;
+  }
+
+  fsize = write(fd, reg_gp, reg_gp_size);
+
+  close(fd);
+
+  if (fsize == -1)
+  {
+    perror("error occured");
+    return -1;
+  }
+  else if (fsize != reg_gp_size)
+  {
+    printf("reg: written only part of memory\n");
+  }
+
+  return fsize;
 }
 
 int mem_print(size_t size)

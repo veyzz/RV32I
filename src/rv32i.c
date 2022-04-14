@@ -47,6 +47,18 @@ int main(int argc, char const **argv)
   mem_print(8);
   reg_print();
 
+  if (0 > mem_save("memsave.bin"))
+  {
+    printf("failed to write memory\n");
+    return -1;
+  }
+
+  if (0 > reg_save("regsave.bin"))
+  {
+    printf("failed to write registers\n");
+    return -1;
+  }
+
   return 0;
 }
 
