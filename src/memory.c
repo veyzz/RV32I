@@ -45,7 +45,7 @@ int reg_init(char const *reg_path)
   int fd;
   struct stat filestat;
   void *data = NULL;
-  size_t reg_gp_size = (REG_GP_COUNT - 1) * sizeof(reg_gp[0]);
+  size_t reg_gp_size = REG_GP_COUNT * sizeof(reg_gp[0]);
 
   fd = open(reg_path, O_RDWR | O_SYNC);
 
@@ -68,7 +68,7 @@ int reg_init(char const *reg_path)
     return -1;
   }
 
-  memcpy(&reg_gp[1], data, reg_gp_size);
+  memcpy(reg_gp, data, reg_gp_size);
 
   munmap(data, filestat.st_size);
 
