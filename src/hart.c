@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string.h>
+#include <sys/types.h>
 #include "memory.h"
 #include "hart.h"
 
@@ -11,7 +12,7 @@ int fetch(uint8_t *ip)
 
   switch (GET_OPCODE(instr))
   {
-    case 0b0110011:
+    case 0x33:
 
       switch(GET_FUNCT3(instr))
       {
@@ -20,7 +21,7 @@ int fetch(uint8_t *ip)
           switch(GET_FUNCT7(instr))
           {
 
-            case 0x00:
+            case 0x0:
               reg_gp[GET_RD(instr)] = \
                 reg_gp[GET_RS1(instr)] + reg_gp[GET_RS2(instr)];
               break;
@@ -60,7 +61,7 @@ int fetch(uint8_t *ip)
           switch(GET_FUNCT7(instr))
           {
 
-            case 0x00:
+            case 0x0:
               reg_gp[GET_RD(instr)] = \
                 reg_gp[GET_RS1(instr)] >> reg_gp[GET_RS2(instr)];
               break;
@@ -90,7 +91,7 @@ int fetch(uint8_t *ip)
       }
       break;
 
-    case 0b0010011:
+    case 0x13:
 
       switch(GET_FUNCT3(instr))
       {
@@ -119,7 +120,7 @@ int fetch(uint8_t *ip)
           switch(GET_BIT_FIELD(GET_IMM_I(instr), 5, 11))
           {
 
-            case 0x00:
+            case 0x0:
               reg_gp[GET_RD(instr)] = \
                 reg_gp[GET_RS1(instr)] << GET_BIT_FIELD(GET_IMM_I(instr), 0, 4);
               break;
@@ -134,7 +135,7 @@ int fetch(uint8_t *ip)
           switch(GET_BIT_FIELD(GET_IMM_I(instr), 5, 11))
           {
 
-            case 0x00:
+            case 0x0:
               reg_gp[GET_RD(instr)] = \
                 reg_gp[GET_RS1(instr)] >> GET_BIT_FIELD(GET_IMM_I(instr), 0, 4);
               break;
@@ -165,7 +166,7 @@ int fetch(uint8_t *ip)
       }
       break;
 
-    case 0b0000011:
+    case 0x3:
 
       switch(GET_FUNCT3(instr))
       {
@@ -204,7 +205,7 @@ int fetch(uint8_t *ip)
       }
       break;
 
-    case 0b0100011:
+    case 0x23:
 
       switch(GET_FUNCT3(instr))
       {
@@ -231,7 +232,7 @@ int fetch(uint8_t *ip)
       }
       break;
 
-    case 0b1100011:
+    case 0x63:
 
       switch(GET_FUNCT3(instr))
       {
@@ -282,13 +283,13 @@ int fetch(uint8_t *ip)
       }
       break;
 
-    case 0b1101111:
+    case 0x6F:
 
       reg_gp[GET_RD(instr)] = reg_pc[0] + sizeof(uint32_t);
       reg_pc[0] += GET_IMM_J(instr);
       break;
 
-    case 0b1100111:
+    case 0x67:
 
       switch(GET_FUNCT3(instr))
       {
@@ -302,12 +303,12 @@ int fetch(uint8_t *ip)
       }
       break;
 
-    case 0b0110111:
+    case 0x37:
 
       reg_gp[GET_RD(instr)] = GET_IMM_U(instr) << 12;
       break;
 
-    case 0b0010111:
+    case 0x17:
 
       reg_gp[GET_RD(instr)] = reg_pc[0] + (GET_IMM_U(instr) << 12);
       break;

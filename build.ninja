@@ -1,5 +1,5 @@
 builddir = build/
-cflags = -Wall
+cflags = -Werror -Wall -Wextra -Wpedantic
 
 rule cc
   command = gcc $cflags -c $in -o $out

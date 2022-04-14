@@ -10,11 +10,12 @@
 #include <unistd.h>
 #include "memory.h"
 
-int mem_init(char const *mem_path)
+ssize_t mem_init(char const *mem_path)
 {
   int fd;
   struct stat filestat;
   void *data = NULL;
+  size_t fsize;
 
   fd = open(mem_path, O_RDONLY | O_SYNC);
 
@@ -24,27 +25,30 @@ int mem_init(char const *mem_path)
     return -1;
   }
 
-  data = mmap(NULL, filestat.st_size, PROT_READ, MAP_SHARED, fd, 0);
+  fsize = filestat.st_size;
+
+  data = mmap(NULL, fsize, PROT_READ, MAP_SHARED, fd, 0);
   if (data == MAP_FAILED)
   {
     perror("mmap failed");
     return -1;
   }
 
-  memcpy(memory, data, filestat.st_size);
+  memcpy(memory, data, fsize);
 
-  munmap(data, filestat.st_size);
+  munmap(data, fsize);
 
   close(fd);
 
-  return filestat.st_size;
+  return fsize;
 }
 
-int reg_init(char const *reg_path)
+ssize_t reg_init(char const *reg_path)
 {
   int fd;
   struct stat filestat;
   void *data = NULL;
+  size_t fsize;
   size_t reg_gp_size = REG_GP_COUNT * sizeof(reg_gp[0]);
 
   fd = open(reg_path, O_RDONLY | O_SYNC);
@@ -55,13 +59,15 @@ int reg_init(char const *reg_path)
     return -1;
   }
 
-  if (filestat.st_size != reg_gp_size)
+  fsize = filestat.st_size;
+
+  if (fsize != reg_gp_size)
   {
     printf("reg_init: wrong filesize\n");
     return -1;
   }
 
-  data = mmap(NULL, filestat.st_size, PROT_READ, MAP_SHARED, fd, 0);
+  data = mmap(NULL, fsize, PROT_READ, MAP_SHARED, fd, 0);
   if (data == MAP_FAILED)
   {
     perror("mmap failed");
@@ -70,17 +76,17 @@ int reg_init(char const *reg_path)
 
   memcpy(reg_gp, data, reg_gp_size);
 
-  munmap(data, filestat.st_size);
+  munmap(data, fsize);
 
   close(fd);
 
-  return filestat.st_size;
+  return fsize;
 }
 
-int mem_save(char const *mem_path)
+ssize_t mem_save(char const *mem_path)
 {
   int fd;
-  size_t fsize;
+  ssize_t fsize;
 
   fd = open(mem_path,
             O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,
@@ -109,10 +115,10 @@ int mem_save(char const *mem_path)
   return fsize;
 }
 
-int reg_save(char const *reg_path)
+ssize_t reg_save(char const *reg_path)
 {
   int fd;
-  size_t fsize;
+  ssize_t fsize;
   size_t reg_gp_size = REG_GP_COUNT * sizeof(reg_gp[0]);
 
   fd = open(reg_path,
@@ -134,7 +140,7 @@ int reg_save(char const *reg_path)
     perror("error occured");
     return -1;
   }
-  else if (fsize != reg_gp_size)
+  else if ((size_t)fsize != reg_gp_size)
   {
     printf("reg: written only part of memory\n");
   }
