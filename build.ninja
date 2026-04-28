@@ -23,5 +23,140 @@ build ${builddir}/debug/hart.o: cc_debug src/hart.c
 build ${builddir}/debug/rv32i.o: cc_debug src/rv32i.c
 build ${builddir}/debug/rv32i: link_debug ${builddir}/debug/rv32i.o ${builddir}/debug/hart.o ${builddir}/debug/memory.o
 
+rule as
+  command = riscv32-unknown-elf-as -march=rv32i $in -o $out
+
+rule objcopy_bin
+  command = riscv32-unknown-elf-objcopy -O binary -j .text $in $out
+
+build ${builddir}/tests/add.o:         as tests/asm/add.s
+build ${builddir}/tests/sub.o:         as tests/asm/sub.s
+build ${builddir}/tests/xor.o:         as tests/asm/xor.s
+build ${builddir}/tests/or.o:          as tests/asm/or.s
+build ${builddir}/tests/and.o:         as tests/asm/and.s
+build ${builddir}/tests/sll.o:         as tests/asm/sll.s
+build ${builddir}/tests/srl.o:         as tests/asm/srl.s
+build ${builddir}/tests/sra.o:         as tests/asm/sra.s
+build ${builddir}/tests/slt.o:         as tests/asm/slt.s
+build ${builddir}/tests/sltu.o:        as tests/asm/sltu.s
+build ${builddir}/tests/addi.o:        as tests/asm/addi.s
+build ${builddir}/tests/addi_neg.o:    as tests/asm/addi_neg.s
+build ${builddir}/tests/xori.o:        as tests/asm/xori.s
+build ${builddir}/tests/ori.o:         as tests/asm/ori.s
+build ${builddir}/tests/andi.o:        as tests/asm/andi.s
+build ${builddir}/tests/slti.o:        as tests/asm/slti.s
+build ${builddir}/tests/sltiu.o:       as tests/asm/sltiu.s
+build ${builddir}/tests/slli.o:        as tests/asm/slli.s
+build ${builddir}/tests/srli.o:        as tests/asm/srli.s
+build ${builddir}/tests/srai.o:        as tests/asm/srai.s
+build ${builddir}/tests/lb.o:          as tests/asm/lb.s
+build ${builddir}/tests/lbu.o:         as tests/asm/lbu.s
+build ${builddir}/tests/lh.o:          as tests/asm/lh.s
+build ${builddir}/tests/lhu.o:         as tests/asm/lhu.s
+build ${builddir}/tests/lw.o:          as tests/asm/lw.s
+build ${builddir}/tests/sb.o:          as tests/asm/sb.s
+build ${builddir}/tests/sh.o:          as tests/asm/sh.s
+build ${builddir}/tests/sw.o:          as tests/asm/sw.s
+build ${builddir}/tests/beq.o:         as tests/asm/beq.s
+build ${builddir}/tests/bne.o:         as tests/asm/bne.s
+build ${builddir}/tests/blt.o:         as tests/asm/blt.s
+build ${builddir}/tests/bge.o:         as tests/asm/bge.s
+build ${builddir}/tests/bltu.o:        as tests/asm/bltu.s
+build ${builddir}/tests/bgeu.o:        as tests/asm/bgeu.s
+build ${builddir}/tests/jal.o:         as tests/asm/jal.s
+build ${builddir}/tests/jalr.o:        as tests/asm/jalr.s
+build ${builddir}/tests/lui.o:         as tests/asm/lui.s
+build ${builddir}/tests/auipc.o:       as tests/asm/auipc.s
+build ${builddir}/tests/chain.o:       as tests/asm/chain.s
+build ${builddir}/tests/invalid_opcode.o: as tests/asm/invalid_opcode.s
+
+build ${builddir}/tests/add.bin:            objcopy_bin ${builddir}/tests/add.o
+build ${builddir}/tests/sub.bin:            objcopy_bin ${builddir}/tests/sub.o
+build ${builddir}/tests/xor.bin:            objcopy_bin ${builddir}/tests/xor.o
+build ${builddir}/tests/or.bin:             objcopy_bin ${builddir}/tests/or.o
+build ${builddir}/tests/and.bin:            objcopy_bin ${builddir}/tests/and.o
+build ${builddir}/tests/sll.bin:            objcopy_bin ${builddir}/tests/sll.o
+build ${builddir}/tests/srl.bin:            objcopy_bin ${builddir}/tests/srl.o
+build ${builddir}/tests/sra.bin:            objcopy_bin ${builddir}/tests/sra.o
+build ${builddir}/tests/slt.bin:            objcopy_bin ${builddir}/tests/slt.o
+build ${builddir}/tests/sltu.bin:           objcopy_bin ${builddir}/tests/sltu.o
+build ${builddir}/tests/addi.bin:           objcopy_bin ${builddir}/tests/addi.o
+build ${builddir}/tests/addi_neg.bin:       objcopy_bin ${builddir}/tests/addi_neg.o
+build ${builddir}/tests/xori.bin:           objcopy_bin ${builddir}/tests/xori.o
+build ${builddir}/tests/ori.bin:            objcopy_bin ${builddir}/tests/ori.o
+build ${builddir}/tests/andi.bin:           objcopy_bin ${builddir}/tests/andi.o
+build ${builddir}/tests/slti.bin:           objcopy_bin ${builddir}/tests/slti.o
+build ${builddir}/tests/sltiu.bin:          objcopy_bin ${builddir}/tests/sltiu.o
+build ${builddir}/tests/slli.bin:           objcopy_bin ${builddir}/tests/slli.o
+build ${builddir}/tests/srli.bin:           objcopy_bin ${builddir}/tests/srli.o
+build ${builddir}/tests/srai.bin:           objcopy_bin ${builddir}/tests/srai.o
+build ${builddir}/tests/lb.bin:             objcopy_bin ${builddir}/tests/lb.o
+build ${builddir}/tests/lbu.bin:            objcopy_bin ${builddir}/tests/lbu.o
+build ${builddir}/tests/lh.bin:             objcopy_bin ${builddir}/tests/lh.o
+build ${builddir}/tests/lhu.bin:            objcopy_bin ${builddir}/tests/lhu.o
+build ${builddir}/tests/lw.bin:             objcopy_bin ${builddir}/tests/lw.o
+build ${builddir}/tests/sb.bin:             objcopy_bin ${builddir}/tests/sb.o
+build ${builddir}/tests/sh.bin:             objcopy_bin ${builddir}/tests/sh.o
+build ${builddir}/tests/sw.bin:             objcopy_bin ${builddir}/tests/sw.o
+build ${builddir}/tests/beq.bin:            objcopy_bin ${builddir}/tests/beq.o
+build ${builddir}/tests/bne.bin:            objcopy_bin ${builddir}/tests/bne.o
+build ${builddir}/tests/blt.bin:            objcopy_bin ${builddir}/tests/blt.o
+build ${builddir}/tests/bge.bin:            objcopy_bin ${builddir}/tests/bge.o
+build ${builddir}/tests/bltu.bin:           objcopy_bin ${builddir}/tests/bltu.o
+build ${builddir}/tests/bgeu.bin:           objcopy_bin ${builddir}/tests/bgeu.o
+build ${builddir}/tests/jal.bin:            objcopy_bin ${builddir}/tests/jal.o
+build ${builddir}/tests/jalr.bin:           objcopy_bin ${builddir}/tests/jalr.o
+build ${builddir}/tests/lui.bin:            objcopy_bin ${builddir}/tests/lui.o
+build ${builddir}/tests/auipc.bin:          objcopy_bin ${builddir}/tests/auipc.o
+build ${builddir}/tests/chain.bin:          objcopy_bin ${builddir}/tests/chain.o
+build ${builddir}/tests/invalid_opcode.bin: objcopy_bin ${builddir}/tests/invalid_opcode.o
+
+rule run_tests
+  command = python3 $in
+  description = running tests
+  pool = console
+
+build test: run_tests tests/runner.py | ${builddir}/debug/rv32i $
+    ${builddir}/tests/add.bin $
+    ${builddir}/tests/sub.bin $
+    ${builddir}/tests/xor.bin $
+    ${builddir}/tests/or.bin $
+    ${builddir}/tests/and.bin $
+    ${builddir}/tests/sll.bin $
+    ${builddir}/tests/srl.bin $
+    ${builddir}/tests/sra.bin $
+    ${builddir}/tests/slt.bin $
+    ${builddir}/tests/sltu.bin $
+    ${builddir}/tests/addi.bin $
+    ${builddir}/tests/addi_neg.bin $
+    ${builddir}/tests/xori.bin $
+    ${builddir}/tests/ori.bin $
+    ${builddir}/tests/andi.bin $
+    ${builddir}/tests/slti.bin $
+    ${builddir}/tests/sltiu.bin $
+    ${builddir}/tests/slli.bin $
+    ${builddir}/tests/srli.bin $
+    ${builddir}/tests/srai.bin $
+    ${builddir}/tests/lb.bin $
+    ${builddir}/tests/lbu.bin $
+    ${builddir}/tests/lh.bin $
+    ${builddir}/tests/lhu.bin $
+    ${builddir}/tests/lw.bin $
+    ${builddir}/tests/sb.bin $
+    ${builddir}/tests/sh.bin $
+    ${builddir}/tests/sw.bin $
+    ${builddir}/tests/beq.bin $
+    ${builddir}/tests/bne.bin $
+    ${builddir}/tests/blt.bin $
+    ${builddir}/tests/bge.bin $
+    ${builddir}/tests/bltu.bin $
+    ${builddir}/tests/bgeu.bin $
+    ${builddir}/tests/jal.bin $
+    ${builddir}/tests/jalr.bin $
+    ${builddir}/tests/lui.bin $
+    ${builddir}/tests/auipc.bin $
+    ${builddir}/tests/chain.bin $
+    ${builddir}/tests/invalid_opcode.bin
+
 default ${builddir}/debug/rv32i
 
