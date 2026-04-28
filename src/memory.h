@@ -57,18 +57,17 @@ enum
 #else /* MAIN_FILE */
 #define IS_EXTERN
 #endif /* MAIN_FILE */
-IS_EXTERN uint8_t  memory[MEMSIZE];
+IS_EXTERN uint8_t memory[MEMSIZE];
 IS_EXTERN uint32_t reg_gp[REG_GP_COUNT];
 IS_EXTERN uint32_t reg_pc[REG_PC_COUNT];
 #undef IS_EXTERN
 
-int mem_init(char const *mem_path);
-int reg_init(char const *reg_path);
-int mem_save(char const *mem_path);
-int reg_save(char const *reg_path);
+int mem_init (char const *mem_path);
+int reg_init (char const *reg_path);
+int mem_save (char const *mem_path);
+int reg_save (char const *reg_path);
 
-int mem_print(size_t size);
-int reg_print();
+int mem_print (size_t size);
+int reg_print ();
 
 #endif /* __MEMORY_H__ */
-
