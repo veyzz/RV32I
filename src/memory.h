@@ -68,6 +68,6 @@ int mem_save (char const *mem_path);
 int reg_save (char const *reg_path);
 
 int mem_print (size_t size);
-int reg_print ();
+int reg_print (void);
 
 #endif /* __MEMORY_H__ */

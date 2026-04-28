@@ -18,19 +18,19 @@ main (int argc, char const **argv)
       return -1;
     }
 
-  if (0 > mem_init (argv[1]))
+  if (mem_init (argv[1]) < 0)
     {
       printf ("failed to read memory\n");
       return -1;
     }
 
-  if (0 > reg_init (argv[2]))
+  if (reg_init (argv[2]) < 0)
     {
       printf ("failed to read registers\n");
       return -1;
     }
 
-  if (1 != sscanf (argv[3], "%x", reg_pc))
+  if (sscanf (argv[3], "%x", reg_pc) != 1)
     {
       printf ("failed to get PC\n");
       return -1;
@@ -48,13 +48,13 @@ main (int argc, char const **argv)
   mem_print (8);
   reg_print ();
 
-  if (0 > mem_save ("memsave.bin"))
+  if (mem_save ("memsave.bin") < 0)
     {
       printf ("failed to write memory\n");
       return -1;
     }
 
-  if (0 > reg_save ("regsave.bin"))
+  if (reg_save ("regsave.bin") < 0)
     {
       printf ("failed to write registers\n");
       return -1;

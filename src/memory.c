@@ -57,7 +57,7 @@ reg_init (char const *reg_path)
       return -1;
     }
 
-  if (filestat.st_size != reg_gp_size)
+  if ((size_t)filestat.st_size != reg_gp_size)
     {
       printf ("reg_init: wrong filesize\n");
       return -1;
@@ -83,7 +83,7 @@ int
 mem_save (char const *mem_path)
 {
   int fd;
-  size_t fsize;
+  ssize_t nw;
 
   fd = open (mem_path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,
              S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -94,28 +94,28 @@ mem_save (char const *mem_path)
       return -1;
     }
 
-  fsize = write (fd, memory, MEMSIZE);
+  nw = write (fd, memory, MEMSIZE);
 
   close (fd);
 
-  if (fsize == -1)
+  if (nw < 0)
     {
       perror ("error occured");
       return -1;
     }
-  else if (fsize != MEMSIZE)
+  if ((size_t)nw != MEMSIZE)
     {
       printf ("mem: written only part of memory\n");
     }
 
-  return fsize;
+  return (int)nw;
 }
 
 int
 reg_save (char const *reg_path)
 {
   int fd;
-  size_t fsize;
+  ssize_t nw;
   size_t reg_gp_size = REG_GP_COUNT * sizeof (reg_gp[0]);
 
   fd = open (reg_path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,
@@ -127,21 +127,21 @@ reg_save (char const *reg_path)
       return -1;
     }
 
-  fsize = write (fd, reg_gp, reg_gp_size);
+  nw = write (fd, reg_gp, reg_gp_size);
 
   close (fd);
 
-  if (fsize == -1)
+  if (nw < 0)
     {
       perror ("error occured");
       return -1;
     }
-  else if (fsize != reg_gp_size)
+  if ((size_t)nw != reg_gp_size)
     {
       printf ("reg: written only part of memory\n");
     }
 
-  return fsize;
+  return (int)nw;
 }
 
 int
@@ -164,7 +164,7 @@ mem_print (size_t size)
 }
 
 int
-reg_print ()
+reg_print (void)
 {
   uint8_t *p;
   size_t reg;
