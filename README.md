@@ -38,6 +38,31 @@ Outputs:
 - `memsave.bin`
 - `regsave.bin`
 
+## Run Custom ASM
+
+For quick local experiments, use the helper script:
+
+```bash
+./scripts/run-asm.sh path/to/program.s
+```
+
+Optional custom start PC:
+
+```bash
+./scripts/run-asm.sh path/to/program.s 0x80000000
+```
+
+The script assembles `.s` into a flat image, runs the emulator, and saves:
+- `output/<program>.memsave.bin`
+- `output/<program>.regsave.bin`
+
+Note: add `.word 0` at the end of your program to stop execution.
+Cleanup output manually:
+
+```bash
+rm -rf output/
+```
+
 ## Tests
 
 ```bash
