@@ -6,6 +6,8 @@
 int
 main (int argc, char const **argv)
 {
+  int fetch_ret;
+
   if (argc != 2 && argc != 3)
     {
       printf ("Usage: %s image.bin [pc]\n"
@@ -31,9 +33,35 @@ main (int argc, char const **argv)
   while (1)
     {
       if (!ADDR_IS_VALID (reg_pc[0]))
-        break;
-      if (fetch (memory + ADDR_TO_IDX (reg_pc[0])))
-        break;
+        {
+          printf ("stop: PC out of bounds (0x%08x)\n", reg_pc[0]);
+          break;
+        }
+
+      fetch_ret = fetch (memory + ADDR_TO_IDX (reg_pc[0]));
+      if (fetch_ret != FETCH_OK)
+        {
+          switch (fetch_ret)
+            {
+              case FETCH_TRAP_ECALL:
+                printf ("stop: trap ecall at PC=0x%08x\n", reg_pc[0]);
+                break;
+
+              case FETCH_TRAP_EBREAK:
+                printf ("stop: trap ebreak at PC=0x%08x\n", reg_pc[0]);
+                break;
+
+              case FETCH_FAULT:
+                printf ("stop: fault at PC=0x%08x\n", reg_pc[0]);
+                break;
+
+              case FETCH_INVALID:
+              default:
+                printf ("stop: invalid instruction at PC=0x%08x\n", reg_pc[0]);
+                break;
+            }
+          break;
+        }
     };
 
   mem_print (32);

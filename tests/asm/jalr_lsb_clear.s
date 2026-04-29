@@ -8,4 +8,4 @@
     jalr  x1, 0(x2)
     addi  x3, x0, 99
     addi  x3, x0, 7
-    .word 0
+    ebreak

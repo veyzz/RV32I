@@ -7,4 +7,4 @@
     addi  x2, x2, 16
     jalr  x1, 0(x2)
     addi  x3, x0, 99
-    .word 0
+    ebreak

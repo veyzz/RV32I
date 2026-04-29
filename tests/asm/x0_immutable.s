@@ -10,4 +10,4 @@
     li   x2, 5
     add  x0, x2, x2
     add  x3, x0, x0
-    .word 0
+    ebreak

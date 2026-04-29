@@ -3,4 +3,4 @@
 
 .text
     auipc x1, 0x12345
-    .word 0
+    ebreak

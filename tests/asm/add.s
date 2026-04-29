@@ -4,4 +4,4 @@
     li x1, 10
     li x2, 32
     add x3, x1, x2
-    .word 0
+    ebreak

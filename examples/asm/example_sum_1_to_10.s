@@ -12,4 +12,4 @@ loop:
     addi x1, x1, 1
     ble x1, x2, loop
 
-    .word 0
+    ebreak

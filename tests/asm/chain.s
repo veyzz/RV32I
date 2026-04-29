@@ -9,4 +9,4 @@
     add x3, x1, x2
     add x4, x3, x1
     sub x5, x4, x2
-    .word 0
+    ebreak

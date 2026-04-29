@@ -3,4 +3,4 @@
 .text
     li x1, 10
     xori x2, x1, 15
-    .word 0
+    ebreak

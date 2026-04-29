@@ -5,4 +5,4 @@
     li x1, 0x80000fff
     lw x2, 0(x1)
     addi x3, x0, 1
-    .word 0
+    ebreak

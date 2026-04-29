@@ -4,4 +4,4 @@
     li x1, 0xffffffff
     li x2, 1
     slt x3, x1, x2
-    .word 0
+    ebreak

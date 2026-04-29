@@ -10,4 +10,4 @@
     li x4, 0x80000000
     srl x5, x4, x2
     sra x6, x4, x2
-    .word 0
+    ebreak

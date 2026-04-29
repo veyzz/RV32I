@@ -4,5 +4,5 @@
     li x1, 0x80000000
     li x2, 0xdeadbeef
     sh x2, 20(x1)
-    .word 0
+    ebreak
     .word 0

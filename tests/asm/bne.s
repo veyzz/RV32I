@@ -7,4 +7,4 @@
     bne x1, x2, target
     addi x3, x0, 99
 target:
-    .word 0
+    ebreak

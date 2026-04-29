@@ -4,4 +4,4 @@
     li x1, 32
     li x2, 2
     srl x3, x1, x2
-    .word 0
+    ebreak

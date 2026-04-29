@@ -3,4 +3,4 @@
 .text
     li x1, 0xffffffff
     srai x2, x1, 3
-    .word 0
+    ebreak

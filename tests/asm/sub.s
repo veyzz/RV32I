@@ -4,4 +4,4 @@
     li x1, 100
     li x2, 58
     sub x3, x1, x2
-    .word 0
+    ebreak

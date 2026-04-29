@@ -3,5 +3,5 @@
 .text
     li x1, 0x80000000
     lw x2, 12(x1)
-    .word 0
+    ebreak
     .word 0x12345678

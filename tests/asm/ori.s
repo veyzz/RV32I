@@ -3,4 +3,4 @@
 .text
     li x1, 10
     ori x2, x1, 5
-    .word 0
+    ebreak

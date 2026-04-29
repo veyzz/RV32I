@@ -35,7 +35,7 @@ fetch (uint8_t *ip)
                     break;
 
                   default:
-                    return 1;
+                    return FETCH_INVALID;
                 }
               break;
 
@@ -78,7 +78,7 @@ fetch (uint8_t *ip)
                     break;
 
                   default:
-                    return 1;
+                    return FETCH_INVALID;
                 }
               break;
 
@@ -97,7 +97,7 @@ fetch (uint8_t *ip)
               break;
 
             default:
-              return 1;
+              return FETCH_INVALID;
           }
         break;
 
@@ -138,7 +138,7 @@ fetch (uint8_t *ip)
                     break;
 
                   default:
-                    return 1;
+                    return FETCH_INVALID;
                 }
               break;
 
@@ -162,7 +162,7 @@ fetch (uint8_t *ip)
                     break;
 
                   default:
-                    return 1;
+                    return FETCH_INVALID;
                 }
               break;
 
@@ -181,7 +181,7 @@ fetch (uint8_t *ip)
               break;
 
             default:
-              return 1;
+              return FETCH_INVALID;
           }
         break;
 
@@ -193,41 +193,41 @@ fetch (uint8_t *ip)
             {
               case RV_F3_MEM_B:
                 if (!ADDR_IS_VALID (addr))
-                  return 1;
+                  return FETCH_FAULT;
                 reg_gp[GET_RD (instr)] = *(int8_t *)(memory
                                                      + ADDR_TO_IDX (addr));
                 break;
 
               case RV_F3_MEM_H:
                 if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 1))
-                  return 1;
+                  return FETCH_FAULT;
                 reg_gp[GET_RD (instr)] = *(int16_t *)(memory
                                                       + ADDR_TO_IDX (addr));
                 break;
 
               case RV_F3_MEM_W:
                 if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 3))
-                  return 1;
+                  return FETCH_FAULT;
                 reg_gp[GET_RD (instr)] = *(uint32_t *)(memory
                                                        + ADDR_TO_IDX (addr));
                 break;
 
               case RV_F3_MEM_BU:
                 if (!ADDR_IS_VALID (addr))
-                  return 1;
+                  return FETCH_FAULT;
                 reg_gp[GET_RD (instr)] = *(uint8_t *)(memory
                                                       + ADDR_TO_IDX (addr));
                 break;
 
               case RV_F3_MEM_HU:
                 if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 1))
-                  return 1;
+                  return FETCH_FAULT;
                 reg_gp[GET_RD (instr)] = *(uint16_t *)(memory
                                                        + ADDR_TO_IDX (addr));
                 break;
 
               default:
-                return 1;
+                return FETCH_INVALID;
             }
           break;
         }
@@ -240,27 +240,27 @@ fetch (uint8_t *ip)
             {
               case RV_F3_MEM_B:
                 if (!ADDR_IS_VALID (addr))
-                  return 1;
+                  return FETCH_FAULT;
                 memcpy (memory + ADDR_TO_IDX (addr), reg_gp + GET_RS2 (instr),
                         sizeof (uint8_t));
                 break;
 
               case RV_F3_MEM_H:
                 if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 1))
-                  return 1;
+                  return FETCH_FAULT;
                 memcpy (memory + ADDR_TO_IDX (addr), reg_gp + GET_RS2 (instr),
                         sizeof (uint16_t));
                 break;
 
               case RV_F3_MEM_W:
                 if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 3))
-                  return 1;
+                  return FETCH_FAULT;
                 memcpy (memory + ADDR_TO_IDX (addr), reg_gp + GET_RS2 (instr),
                         sizeof (uint32_t));
                 break;
 
               default:
-                return 1;
+                return FETCH_INVALID;
             }
           break;
         }
@@ -314,7 +314,7 @@ fetch (uint8_t *ip)
               break;
 
             default:
-              return 1;
+              return FETCH_INVALID;
           }
         break;
 
@@ -334,7 +334,7 @@ fetch (uint8_t *ip)
               break;
 
             default:
-              return 1;
+              return FETCH_INVALID;
           }
         break;
 
@@ -348,11 +348,48 @@ fetch (uint8_t *ip)
         reg_gp[GET_RD (instr)] = pc_cur + GET_IMM_U (instr);
         break;
 
+      case RV_OP_SYSTEM:
+
+        switch (GET_FUNCT3 (instr))
+          {
+            case RV_F3_PRIV:
+
+              switch (GET_FUNCT12 (instr))
+                {
+                  case RV_F12_ECALL:
+                    return FETCH_TRAP_ECALL;
+
+                  case RV_F12_EBREAK:
+                    return FETCH_TRAP_EBREAK;
+
+                  default:
+                    return FETCH_INVALID;
+                }
+              break;
+
+            default:
+              return FETCH_INVALID;
+          }
+        break;
+
+      case RV_OP_MISC_MEM:
+
+        switch (GET_FUNCT3 (instr))
+          {
+            case RV_F3_FENCE:
+              /* NOP */
+              break;
+
+            default:
+              return FETCH_INVALID;
+          }
+        break;
+
       default:
-        return 1;
+        return FETCH_INVALID;
     }
 
   reg_pc[0] = pc_next;
 
-  return 0;
+  return FETCH_OK;
 }

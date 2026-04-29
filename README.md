@@ -56,7 +56,7 @@ The script assembles `.s` into a flat image, runs the emulator, and saves:
 - `output/<program>.memsave.bin`
 - `output/<program>.regsave.bin`
 
-Note: add `.word 0` at the end of your program to stop execution.
+Note: end programs with `ebreak` to stop execution cleanly (breakpoint trap).
 
 Example:
 
