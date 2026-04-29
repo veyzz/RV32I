@@ -3,14 +3,16 @@
 Each .s test file declares its spec via comment directives:
 
     # EXPECT_REG <idx>  <value>
-    # EXPECT_MEM <addr> <u32>
+    # EXPECT_MEM <offset> <u32>
     # EXPECT_PC  <value>
+
+EXPECT_MEM <offset> is a byte offset inside memsave.bin, not a
+virtual address.
 
 Values can be decimal, hex (0x...), or negative.
 """
 import glob
 import os
-import re
 import shutil
 import struct
 import subprocess
@@ -22,21 +24,26 @@ EMU = os.path.join(REPO_ROOT, 'build', 'debug', 'rv32i')
 ASM_DIR = os.path.join(REPO_ROOT, 'tests', 'asm')
 BIN_DIR = os.path.join(REPO_ROOT, 'build', 'tests')
 
-# REG_PC is printed twice (before and after the run) — keep the last
-PC_RE = re.compile(r'^REG_PC:.*\|\s*(-?\d+)\s*$', re.MULTILINE)
+GP_REG_COUNT = 32
+REG_SIZE = 4
+PC_OFFSET = GP_REG_COUNT * REG_SIZE
+MIN_REGSAVE_SIZE = PC_OFFSET + REG_SIZE
 
 DIRECTIVES = {'EXPECT_REG', 'EXPECT_MEM', 'EXPECT_PC'}
 
 
 def parse_directives(asm_path):
     spec = {
-        'EXPECT_REG': {}, 'EXPECT_MEM': {},
+        'EXPECT_REG': {},
+        'EXPECT_MEM': {},
         'EXPECT_PC': None,
     }
     with open(asm_path) as fp:
         for line in fp:
             parts = line.split()
-            if len(parts) < 3 or parts[0] != '#' or parts[1] not in DIRECTIVES:
+            if (len(parts) < 3
+                    or parts[0] != '#'
+                    or parts[1] not in DIRECTIVES):
                 continue
             tag = parts[1]
             try:
@@ -45,9 +52,9 @@ def parse_directives(asm_path):
                 else:
                     spec[tag][int(parts[2], 0)] = int(parts[3], 0)
             except (IndexError, ValueError):
-                print(f'warn: malformed directive in',
-                      f'{asm_path}: {line.strip()}',
-                      file=sys.stderr)
+                msg = (f'warn: malformed directive in '
+                       f'{asm_path}: {line.strip()}')
+                print(msg, file=sys.stderr)
     return spec
 
 
@@ -60,42 +67,64 @@ def run_test(name):
 
         proc = subprocess.run(
             [EMU, 'image.bin'],
-            cwd=work, capture_output=True, text=True,
+            cwd=work,
+            capture_output=True,
+            text=True,
         )
 
         failures = []
 
-        if spec['EXPECT_REG']:
-            with open(os.path.join(work, 'regsave.bin'), 'rb') as fp:
-                saved = fp.read()
+        if proc.returncode != 0:
+            failures.append(
+                f'emulator exited with code {proc.returncode}'
+            )
+            if proc.stderr.strip():
+                failures.append(f'stderr: {proc.stderr.strip()}')
+
+        reg_dump = None
+        need_regs = (spec['EXPECT_REG']
+                     or spec['EXPECT_PC'] is not None)
+        if need_regs:
+            reg_path = os.path.join(work, 'regsave.bin')
+            with open(reg_path, 'rb') as fp:
+                reg_dump = fp.read()
+            if len(reg_dump) < MIN_REGSAVE_SIZE:
+                failures.append(
+                    f'regsave.bin too small: {len(reg_dump)} bytes'
+                )
+                reg_dump = None
+
+        if spec['EXPECT_REG'] and reg_dump is not None:
             for r, exp in spec['EXPECT_REG'].items():
-                got = struct.unpack_from('<I', saved, r * 4)[0]
+                got = struct.unpack_from('<I', reg_dump, r * 4)[0]
                 exp_u = exp & 0xFFFFFFFF
                 if got != exp_u:
-                    failures.append(f'x{r}: expected=0x{exp_u:08x}'
-                                    f' got=0x{got:08x}')
+                    failures.append(
+                        f'x{r}: expected=0x{exp_u:08x}'
+                        f' got=0x{got:08x}'
+                    )
 
         if spec['EXPECT_MEM']:
-            with open(os.path.join(work, 'memsave.bin'), 'rb') as fp:
+            mem_path = os.path.join(work, 'memsave.bin')
+            with open(mem_path, 'rb') as fp:
                 saved = fp.read()
             for addr, exp in spec['EXPECT_MEM'].items():
                 got = struct.unpack_from('<I', saved, addr)[0]
                 exp_u = exp & 0xFFFFFFFF
                 if got != exp_u:
-                    failures.append(f'mem[0x{addr:x}]: expected=0x{exp_u:08x}'
-                                    f' got=0x{got:08x}')
-
-        if spec['EXPECT_PC'] is not None:
-            matches = PC_RE.findall(proc.stdout)
-            if not matches:
-                failures.append('PC not found in emulator output')
-            else:
-                got_pc = int(matches[-1]) & 0xFFFFFFFF
-                if got_pc != (spec['EXPECT_PC'] & 0xFFFFFFFF):
                     failures.append(
-                        f'PC: expected=0x{spec["EXPECT_PC"] & 0xFFFFFFFF:08x}'
-                        f' got=0x{got_pc:08x}'
+                        f'mem[0x{addr:x}]: expected=0x{exp_u:08x}'
+                        f' got=0x{got:08x}'
                     )
+
+        if spec['EXPECT_PC'] is not None and reg_dump is not None:
+            got_pc = struct.unpack_from('<I', reg_dump, PC_OFFSET)[0]
+            exp_pc = spec['EXPECT_PC'] & 0xFFFFFFFF
+            if got_pc != exp_pc:
+                failures.append(
+                    f'PC: expected=0x{exp_pc:08x}'
+                    f' got=0x{got_pc:08x}'
+                )
 
         if failures:
             print(f'FAIL  {name}')
@@ -110,23 +139,24 @@ def run_test(name):
 
 def main():
     if not os.path.exists(EMU):
-        sys.exit(f'emulator not found at {EMU} — run: ninja')
+        sys.exit(f'emulator not found at {EMU} - run: ninja')
 
     asm_files = sorted(glob.glob(os.path.join(ASM_DIR, '*.s')))
     failed = 0
     skipped = 0
     for asm in asm_files:
         name = os.path.splitext(os.path.basename(asm))[0]
-        if not os.path.exists(os.path.join(BIN_DIR, f'{name}.bin')):
-            print(f'SKIP  {name} (no binary — run: ninja)')
+        bin_path = os.path.join(BIN_DIR, f'{name}.bin')
+        if not os.path.exists(bin_path):
+            print(f'SKIP  {name} (no binary - run: ninja)')
             skipped += 1
             continue
         if not run_test(name):
             failed += 1
 
+    passed = len(asm_files) - failed - skipped
     print('---')
-    print(f'passed: {len(asm_files) - failed - skipped}  failed: {failed}',
-          f' skipped: {skipped}')
+    print(f'passed: {passed}  failed: {failed}  skipped: {skipped}')
     sys.exit(1 if failed or skipped else 0)
 
 

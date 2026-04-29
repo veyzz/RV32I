@@ -81,8 +81,10 @@ int
 reg_save (char const *reg_path)
 {
   int fd;
-  ssize_t nw;
+  ssize_t nw_gp;
+  ssize_t nw_pc;
   size_t reg_gp_size = REG_GP_COUNT * sizeof (reg_gp[0]);
+  size_t reg_pc_size = sizeof (reg_pc[0]);
 
   fd = open (reg_path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,
              S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -93,38 +95,43 @@ reg_save (char const *reg_path)
       return -1;
     }
 
-  nw = write (fd, reg_gp, reg_gp_size);
+  nw_gp = write (fd, reg_gp, reg_gp_size);
+  nw_pc = write (fd, reg_pc, reg_pc_size);
 
   close (fd);
 
-  if (nw < 0)
+  if (nw_gp < 0 || nw_pc < 0)
     {
       perror ("error occured");
       return -1;
     }
-  if ((size_t)nw != reg_gp_size)
+  if ((size_t)nw_gp != reg_gp_size || (size_t)nw_pc != reg_pc_size)
     {
-      printf ("reg: written only part of memory\n");
+      printf ("reg: written only part of register dump\n");
     }
 
-  return (int)nw;
+  return (int)(nw_gp + nw_pc);
 }
 
 int
 mem_print (size_t size)
 {
-  size_t i;
+  size_t row, col;
 
-  printf ("[ MEMORY ]");
-  for (i = 0; i < size; i++)
+  printf ("[ MEMORY ]\n");
+  for (row = 0; row < size; row += 8)
     {
-      if (i % 16 == 0)
+      printf ("0x%08x: ", IDX_TO_ADDR (row));
+
+      for (col = 0; col < 8; col++)
         {
-          printf ("\n");
+          size_t idx = row + col;
+          if (idx >= size)
+            break;
+          printf ("%02X ", memory[idx]);
         }
-      printf ("%.2x ", memory[i]);
+      printf ("\n");
     }
-  printf ("\n");
 
   return 0;
 }
@@ -132,32 +139,21 @@ mem_print (size_t size)
 int
 reg_print (void)
 {
-  uint8_t *p;
   size_t reg;
-  size_t i;
+  uint8_t *p;
 
   printf ("[ REGISTERS ]\n");
+  printf (" # |     DUMP    |     INT     |     HEX\n");
   for (reg = REG_X0; reg < REG_GP_COUNT; reg++)
     {
-      printf ("REG_X%d:%c ", (int)reg, (reg < 10) ? ' ' : '\0');
       p = (uint8_t *)(reg_gp + reg);
-
-      for (i = 0; i < sizeof (*reg_gp); i++)
-        {
-          printf ("%.2x ", p[i]);
-        }
-      printf ("| %d\n", reg_gp[reg]);
+      printf ("%-2zu | %02X %02X %02X %02X | %11d | 0x%08x\n", reg, p[0], p[1],
+              p[2], p[3], (int32_t)reg_gp[reg], reg_gp[reg]);
     }
 
-  printf ("-----\n");
-
-  printf ("REG_PC:  ");
   p = (uint8_t *)(reg_pc);
-  for (i = 0; i < sizeof (reg_pc[0]); i++)
-    {
-      printf ("%.2x ", p[i]);
-    }
-  printf ("| %d\n", reg_pc[0]);
+  printf ("PC | %02X %02X %02X %02X | %11d | 0x%08x\n", p[0], p[1], p[2], p[3],
+          (int32_t)reg_pc[0], reg_pc[0]);
 
   return 0;
 }

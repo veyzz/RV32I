@@ -48,6 +48,6 @@ riscv32-unknown-elf-objcopy -O binary -j .text "$tmpdir/$base_name.o" "$tmpdir/i
 cp "$tmpdir/memsave.bin" "$out_dir/$base_name.memsave.bin"
 cp "$tmpdir/regsave.bin" "$out_dir/$base_name.regsave.bin"
 
-echo "OK: ran $src_abs"
+echo
 echo "saved: $out_dir/$base_name.memsave.bin"
 echo "saved: $out_dir/$base_name.regsave.bin"

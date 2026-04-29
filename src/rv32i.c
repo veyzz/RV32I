@@ -28,9 +28,6 @@ main (int argc, char const **argv)
       return -1;
     }
 
-  mem_print (8);
-  reg_print ();
-
   while (1)
     {
       if (!ADDR_IS_VALID (reg_pc[0]))
@@ -39,7 +36,8 @@ main (int argc, char const **argv)
         break;
     };
 
-  mem_print (8);
+  mem_print (32);
+  printf ("\n");
   reg_print ();
 
   if (mem_save ("memsave.bin") < 0)
