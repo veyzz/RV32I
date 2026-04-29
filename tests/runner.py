@@ -2,8 +2,6 @@
 """
 Each .s test file declares its spec via comment directives:
 
-    # INIT_REG   <idx>  <value>
-    # INIT_MEM   <addr> <u32>
     # EXPECT_REG <idx>  <value>
     # EXPECT_MEM <addr> <u32>
     # EXPECT_PC  <value>
@@ -27,12 +25,11 @@ BIN_DIR = os.path.join(REPO_ROOT, 'build', 'tests')
 # REG_PC is printed twice (before and after the run) — keep the last
 PC_RE = re.compile(r'^REG_PC:.*\|\s*(-?\d+)\s*$', re.MULTILINE)
 
-DIRECTIVES = {'INIT_REG', 'INIT_MEM', 'EXPECT_REG', 'EXPECT_MEM', 'EXPECT_PC'}
+DIRECTIVES = {'EXPECT_REG', 'EXPECT_MEM', 'EXPECT_PC'}
 
 
 def parse_directives(asm_path):
     spec = {
-        'INIT_REG': {}, 'INIT_MEM': {},
         'EXPECT_REG': {}, 'EXPECT_MEM': {},
         'EXPECT_PC': None,
     }
@@ -48,7 +45,8 @@ def parse_directives(asm_path):
                 else:
                     spec[tag][int(parts[2], 0)] = int(parts[3], 0)
             except (IndexError, ValueError):
-                print(f'warn: malformed directive in {asm_path}: {line.strip()}',
+                print(f'warn: malformed directive in',
+                      f'{asm_path}: {line.strip()}',
                       file=sys.stderr)
     return spec
 
@@ -57,23 +55,11 @@ def run_test(name):
     spec = parse_directives(os.path.join(ASM_DIR, f'{name}.s'))
     work = tempfile.mkdtemp(prefix=f'rv32i-{name}-')
     try:
-        mem_bin = os.path.join(work, 'mem.bin')
-        shutil.copyfile(os.path.join(BIN_DIR, f'{name}.bin'), mem_bin)
-
-        if spec['INIT_MEM']:
-            with open(mem_bin, 'r+b') as fp:
-                for addr, val in spec['INIT_MEM'].items():
-                    fp.seek(addr)
-                    fp.write(struct.pack('<I', val & 0xFFFFFFFF))
-
-        regs = bytearray(128)
-        for r, v in spec['INIT_REG'].items():
-            struct.pack_into('<I', regs, r * 4, v & 0xFFFFFFFF)
-        with open(os.path.join(work, 'regs.bin'), 'wb') as fp:
-            fp.write(regs)
+        image_bin = os.path.join(work, 'image.bin')
+        shutil.copyfile(os.path.join(BIN_DIR, f'{name}.bin'), image_bin)
 
         proc = subprocess.run(
-            [EMU, 'mem.bin', 'regs.bin', '0x0'],
+            [EMU, 'image.bin'],
             cwd=work, capture_output=True, text=True,
         )
 
@@ -86,7 +72,8 @@ def run_test(name):
                 got = struct.unpack_from('<I', saved, r * 4)[0]
                 exp_u = exp & 0xFFFFFFFF
                 if got != exp_u:
-                    failures.append(f'x{r}: expected=0x{exp_u:08x} got=0x{got:08x}')
+                    failures.append(f'x{r}: expected=0x{exp_u:08x}'
+                                    f' got=0x{got:08x}')
 
         if spec['EXPECT_MEM']:
             with open(os.path.join(work, 'memsave.bin'), 'rb') as fp:
@@ -95,14 +82,20 @@ def run_test(name):
                 got = struct.unpack_from('<I', saved, addr)[0]
                 exp_u = exp & 0xFFFFFFFF
                 if got != exp_u:
-                    failures.append(f'mem[0x{addr:x}]: expected=0x{exp_u:08x} got=0x{got:08x}')
+                    failures.append(f'mem[0x{addr:x}]: expected=0x{exp_u:08x}'
+                                    f' got=0x{got:08x}')
 
         if spec['EXPECT_PC'] is not None:
             matches = PC_RE.findall(proc.stdout)
             if not matches:
                 failures.append('PC not found in emulator output')
-            elif int(matches[-1]) != spec['EXPECT_PC']:
-                failures.append(f'PC: expected={spec["EXPECT_PC"]} got={matches[-1]}')
+            else:
+                got_pc = int(matches[-1]) & 0xFFFFFFFF
+                if got_pc != (spec['EXPECT_PC'] & 0xFFFFFFFF):
+                    failures.append(
+                        f'PC: expected=0x{spec["EXPECT_PC"] & 0xFFFFFFFF:08x}'
+                        f' got=0x{got_pc:08x}'
+                    )
 
         if failures:
             print(f'FAIL  {name}')
@@ -132,7 +125,8 @@ def main():
             failed += 1
 
     print('---')
-    print(f'passed: {len(asm_files) - failed - skipped}  failed: {failed}  skipped: {skipped}')
+    print(f'passed: {len(asm_files) - failed - skipped}  failed: {failed}',
+          f' skipped: {skipped}')
     sys.exit(1 if failed or skipped else 0)
 
 

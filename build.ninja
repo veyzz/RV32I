@@ -69,6 +69,16 @@ build ${builddir}/tests/lui.o:         as tests/asm/lui.s
 build ${builddir}/tests/auipc.o:       as tests/asm/auipc.s
 build ${builddir}/tests/chain.o:       as tests/asm/chain.s
 build ${builddir}/tests/invalid_opcode.o: as tests/asm/invalid_opcode.s
+build ${builddir}/tests/jalr_lsb_clear.o: as tests/asm/jalr_lsb_clear.s
+build ${builddir}/tests/shift_mask_rs2.o: as tests/asm/shift_mask_rs2.s
+build ${builddir}/tests/x0_immutable.o: as tests/asm/x0_immutable.s
+build ${builddir}/tests/beq_not_taken.o: as tests/asm/beq_not_taken.s
+build ${builddir}/tests/bne_not_taken.o: as tests/asm/bne_not_taken.s
+build ${builddir}/tests/blt_not_taken.o: as tests/asm/blt_not_taken.s
+build ${builddir}/tests/bge_not_taken.o: as tests/asm/bge_not_taken.s
+build ${builddir}/tests/bltu_not_taken.o: as tests/asm/bltu_not_taken.s
+build ${builddir}/tests/bgeu_not_taken.o: as tests/asm/bgeu_not_taken.s
+build ${builddir}/tests/load_store_oob.o: as tests/asm/load_store_oob.s
 
 build ${builddir}/tests/add.bin:            objcopy_bin ${builddir}/tests/add.o
 build ${builddir}/tests/sub.bin:            objcopy_bin ${builddir}/tests/sub.o
@@ -110,6 +120,16 @@ build ${builddir}/tests/lui.bin:            objcopy_bin ${builddir}/tests/lui.o
 build ${builddir}/tests/auipc.bin:          objcopy_bin ${builddir}/tests/auipc.o
 build ${builddir}/tests/chain.bin:          objcopy_bin ${builddir}/tests/chain.o
 build ${builddir}/tests/invalid_opcode.bin: objcopy_bin ${builddir}/tests/invalid_opcode.o
+build ${builddir}/tests/jalr_lsb_clear.bin: objcopy_bin ${builddir}/tests/jalr_lsb_clear.o
+build ${builddir}/tests/shift_mask_rs2.bin: objcopy_bin ${builddir}/tests/shift_mask_rs2.o
+build ${builddir}/tests/x0_immutable.bin:   objcopy_bin ${builddir}/tests/x0_immutable.o
+build ${builddir}/tests/beq_not_taken.bin:  objcopy_bin ${builddir}/tests/beq_not_taken.o
+build ${builddir}/tests/bne_not_taken.bin:  objcopy_bin ${builddir}/tests/bne_not_taken.o
+build ${builddir}/tests/blt_not_taken.bin:  objcopy_bin ${builddir}/tests/blt_not_taken.o
+build ${builddir}/tests/bge_not_taken.bin:  objcopy_bin ${builddir}/tests/bge_not_taken.o
+build ${builddir}/tests/bltu_not_taken.bin: objcopy_bin ${builddir}/tests/bltu_not_taken.o
+build ${builddir}/tests/bgeu_not_taken.bin: objcopy_bin ${builddir}/tests/bgeu_not_taken.o
+build ${builddir}/tests/load_store_oob.bin: objcopy_bin ${builddir}/tests/load_store_oob.o
 
 rule run_tests
   command = python3 $in
@@ -156,7 +176,17 @@ build test: run_tests tests/runner.py | ${builddir}/debug/rv32i $
     ${builddir}/tests/lui.bin $
     ${builddir}/tests/auipc.bin $
     ${builddir}/tests/chain.bin $
-    ${builddir}/tests/invalid_opcode.bin
+    ${builddir}/tests/invalid_opcode.bin $
+    ${builddir}/tests/jalr_lsb_clear.bin $
+    ${builddir}/tests/shift_mask_rs2.bin $
+    ${builddir}/tests/x0_immutable.bin $
+    ${builddir}/tests/beq_not_taken.bin $
+    ${builddir}/tests/bne_not_taken.bin $
+    ${builddir}/tests/blt_not_taken.bin $
+    ${builddir}/tests/bge_not_taken.bin $
+    ${builddir}/tests/bltu_not_taken.bin $
+    ${builddir}/tests/bgeu_not_taken.bin $
+    ${builddir}/tests/load_store_oob.bin
 
 default ${builddir}/debug/rv32i
 

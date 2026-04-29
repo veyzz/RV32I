@@ -1,6 +1,6 @@
-# INIT_REG 1 10
 # EXPECT_REG 2 8
 
 .text
+    li x1, 10
     andi x2, x1, 12
     .word 0

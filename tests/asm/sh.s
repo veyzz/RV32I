@@ -1,7 +1,8 @@
-# sh stores only the low halfword of x2
-# INIT_REG 2 0xdeadbeef
-# EXPECT_MEM 0x8 0xbeef
+# EXPECT_MEM 0x14 0xbeef
 
 .text
-    sh x2, 8(x1)
+    li x1, 0x80000000
+    li x2, 0xdeadbeef
+    sh x2, 20(x1)
+    .word 0
     .word 0

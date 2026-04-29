@@ -1,6 +1,8 @@
-# INIT_REG 2 0xdeadbeef
-# EXPECT_MEM 0x8 0xdeadbeef
+# EXPECT_MEM 0x14 0xdeadbeef
 
 .text
-    sw x2, 8(x1)
+    li x1, 0x80000000
+    li x2, 0xdeadbeef
+    sw x2, 20(x1)
+    .word 0
     .word 0

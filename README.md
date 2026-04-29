@@ -4,8 +4,9 @@ Small RV32I emulator in C.
 
 Main binary: `build/debug/rv32i`.
 
-It reads memory and register dumps from files, starts execution from the PC you
-pass in, then writes the final state to `memsave.bin` and `regsave.bin`.
+It reads a flat memory image, starts execution from `0x80000000` (or an
+optional PC argument), then writes the final state to `memsave.bin` and
+`regsave.bin`.
 
 ## Requirements
 - `gcc` — builds the emulator.
@@ -26,11 +27,11 @@ This builds `build/debug/rv32i` (default target).
 ## Run
 
 ```bash
-./build/debug/rv32i <mem.bin> <regs.bin> <pc>
+./build/debug/rv32i <image.bin> [pc]
 ```
 
 ```bash
-./build/debug/rv32i mem.bin regs.bin 0x0
+./build/debug/rv32i image.bin
 ```
 
 Outputs:

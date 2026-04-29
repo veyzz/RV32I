@@ -10,6 +10,10 @@
 #include <unistd.h>
 #include "memory.h"
 
+uint8_t memory[MEMSIZE];
+uint32_t reg_gp[REG_GP_COUNT];
+uint32_t reg_pc[REG_PC_COUNT];
+
 int
 mem_init (char const *mem_path)
 {
@@ -33,44 +37,6 @@ mem_init (char const *mem_path)
     }
 
   memcpy (memory, data, filestat.st_size);
-
-  munmap (data, filestat.st_size);
-
-  close (fd);
-
-  return filestat.st_size;
-}
-
-int
-reg_init (char const *reg_path)
-{
-  int fd;
-  struct stat filestat;
-  void *data = NULL;
-  size_t reg_gp_size = REG_GP_COUNT * sizeof (reg_gp[0]);
-
-  fd = open (reg_path, O_RDONLY | O_SYNC);
-
-  if (fd == -1 || fstat (fd, &filestat) == -1)
-    {
-      perror ("error occured");
-      return -1;
-    }
-
-  if ((size_t)filestat.st_size != reg_gp_size)
-    {
-      printf ("reg_init: wrong filesize\n");
-      return -1;
-    }
-
-  data = mmap (NULL, filestat.st_size, PROT_READ, MAP_SHARED, fd, 0);
-  if (data == MAP_FAILED)
-    {
-      perror ("mmap failed");
-      return -1;
-    }
-
-  memcpy (reg_gp, data, reg_gp_size);
 
   munmap (data, filestat.st_size);
 

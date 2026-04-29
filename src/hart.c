@@ -56,7 +56,7 @@ fetch (uint8_t *ip)
 
             case RV_F3_SLL:
               reg_gp[GET_RD (instr)] = reg_gp[GET_RS1 (instr)]
-                                       << reg_gp[GET_RS2 (instr)];
+                                       << (reg_gp[GET_RS2 (instr)] & 0x1F);
               break;
 
             case RV_F3_SRL_SRA:
@@ -66,13 +66,15 @@ fetch (uint8_t *ip)
 
                   case RV_F7_ADD_SRL:
                     reg_gp[GET_RD (instr)] = reg_gp[GET_RS1 (instr)]
-                                             >> reg_gp[GET_RS2 (instr)];
+                                             >> (reg_gp[GET_RS2 (instr)]
+                                                 & 0x1F);
                     break;
 
                   case RV_F7_SUB_SRA:
                     reg_gp[GET_RD (instr)]
                         = (uint32_t)((int32_t)reg_gp[GET_RS1 (instr)]
-                                     >> (int32_t)reg_gp[GET_RS2 (instr)]);
+                                     >> (int32_t)(reg_gp[GET_RS2 (instr)]
+                                                  & 0x1F));
                     break;
 
                   default:
@@ -185,77 +187,83 @@ fetch (uint8_t *ip)
 
       case RV_OP_LOAD:
 
-        switch (GET_FUNCT3 (instr))
-          {
-            case RV_F3_MEM_B:
-              reg_gp[GET_RD (instr)] = *(
-                  int8_t *)(memory
-                            + (reg_gp[GET_RS1 (instr)] + GET_IMM_I (instr))
-                                  % MEMSIZE);
-              break;
+        {
+          uint32_t addr = reg_gp[GET_RS1 (instr)] + GET_IMM_I (instr);
+          switch (GET_FUNCT3 (instr))
+            {
+              case RV_F3_MEM_B:
+                if (!ADDR_IS_VALID (addr))
+                  return 1;
+                reg_gp[GET_RD (instr)] = *(int8_t *)(memory
+                                                     + ADDR_TO_IDX (addr));
+                break;
 
-            case RV_F3_MEM_H:
-              reg_gp[GET_RD (instr)] = *(
-                  int16_t *)(memory
-                             + (reg_gp[GET_RS1 (instr)] + GET_IMM_I (instr))
-                                   % MEMSIZE);
-              break;
+              case RV_F3_MEM_H:
+                if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 1))
+                  return 1;
+                reg_gp[GET_RD (instr)] = *(int16_t *)(memory
+                                                      + ADDR_TO_IDX (addr));
+                break;
 
-            case RV_F3_MEM_W:
-              reg_gp[GET_RD (instr)] = *(
-                  uint32_t *)(memory
-                              + (reg_gp[GET_RS1 (instr)] + GET_IMM_I (instr))
-                                    % MEMSIZE);
-              break;
+              case RV_F3_MEM_W:
+                if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 3))
+                  return 1;
+                reg_gp[GET_RD (instr)] = *(uint32_t *)(memory
+                                                       + ADDR_TO_IDX (addr));
+                break;
 
-            case RV_F3_MEM_BU:
-              reg_gp[GET_RD (instr)] = *(
-                  uint8_t *)(memory
-                             + (reg_gp[GET_RS1 (instr)] + GET_IMM_I (instr))
-                                   % MEMSIZE);
-              break;
+              case RV_F3_MEM_BU:
+                if (!ADDR_IS_VALID (addr))
+                  return 1;
+                reg_gp[GET_RD (instr)] = *(uint8_t *)(memory
+                                                      + ADDR_TO_IDX (addr));
+                break;
 
-            case RV_F3_MEM_HU:
-              reg_gp[GET_RD (instr)] = *(
-                  uint16_t *)(memory
-                              + (reg_gp[GET_RS1 (instr)] + GET_IMM_I (instr))
-                                    % MEMSIZE);
-              break;
+              case RV_F3_MEM_HU:
+                if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 1))
+                  return 1;
+                reg_gp[GET_RD (instr)] = *(uint16_t *)(memory
+                                                       + ADDR_TO_IDX (addr));
+                break;
 
-            default:
-              return 1;
-          }
-        break;
+              default:
+                return 1;
+            }
+          break;
+        }
 
       case RV_OP_STORE:
 
-        switch (GET_FUNCT3 (instr))
-          {
-            case RV_F3_MEM_B:
-              memcpy (memory
-                          + (reg_gp[GET_RS1 (instr)] + GET_IMM_S (instr))
-                                % MEMSIZE,
-                      reg_gp + GET_RS2 (instr), sizeof (uint8_t));
-              break;
+        {
+          uint32_t addr = reg_gp[GET_RS1 (instr)] + GET_IMM_S (instr);
+          switch (GET_FUNCT3 (instr))
+            {
+              case RV_F3_MEM_B:
+                if (!ADDR_IS_VALID (addr))
+                  return 1;
+                memcpy (memory + ADDR_TO_IDX (addr), reg_gp + GET_RS2 (instr),
+                        sizeof (uint8_t));
+                break;
 
-            case RV_F3_MEM_H:
-              memcpy (memory
-                          + (reg_gp[GET_RS1 (instr)] + GET_IMM_S (instr))
-                                % MEMSIZE,
-                      reg_gp + GET_RS2 (instr), sizeof (uint16_t));
-              break;
+              case RV_F3_MEM_H:
+                if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 1))
+                  return 1;
+                memcpy (memory + ADDR_TO_IDX (addr), reg_gp + GET_RS2 (instr),
+                        sizeof (uint16_t));
+                break;
 
-            case RV_F3_MEM_W:
-              memcpy (memory
-                          + (reg_gp[GET_RS1 (instr)] + GET_IMM_S (instr))
-                                % MEMSIZE,
-                      reg_gp + GET_RS2 (instr), sizeof (uint32_t));
-              break;
+              case RV_F3_MEM_W:
+                if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 3))
+                  return 1;
+                memcpy (memory + ADDR_TO_IDX (addr), reg_gp + GET_RS2 (instr),
+                        sizeof (uint32_t));
+                break;
 
-            default:
-              return 1;
-          }
-        break;
+              default:
+                return 1;
+            }
+          break;
+        }
 
       case RV_OP_BRANCH:
 
@@ -322,7 +330,7 @@ fetch (uint8_t *ip)
           {
             case RV_F3_JALR:
               reg_gp[GET_RD (instr)] = pc_cur + sizeof (uint32_t);
-              pc_next = reg_gp[GET_RS1 (instr)] + GET_IMM_I (instr);
+              pc_next = (reg_gp[GET_RS1 (instr)] + GET_IMM_I (instr)) & ~1U;
               break;
 
             default:

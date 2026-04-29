@@ -1,7 +1,7 @@
-# INIT_REG 1 32
-# INIT_REG 2 2
 # EXPECT_REG 3 8
 
 .text
+    li x1, 32
+    li x2, 2
     srl x3, x1, x2
     .word 0

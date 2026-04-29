@@ -1,12 +1,14 @@
 #ifndef __MEMORY_H__
 #define __MEMORY_H__
 
-#define XLEN 32
-#if 0 /* max memsize */
-#define MEMSIZE (1UL << XLEN)
-#else
-#define MEMSIZE (1 << 12) /* 4K */
-#endif
+#define MEMSIZE (1U << 12) /* 4K */
+#define MEMBASE 0x80000000U
+#define MEMMASK ((uint32_t)(MEMSIZE - 1U))
+
+#define ADDR_IS_VALID(addr)                                             \
+  ((uint32_t)(addr) >= MEMBASE && (uint32_t)(addr) < MEMBASE + MEMSIZE)
+#define ADDR_TO_IDX(addr) ((uint32_t)(addr) - MEMBASE)
+#define IDX_TO_ADDR(idx) ((uint32_t)(idx) + MEMBASE)
 
 enum
 {
@@ -52,21 +54,13 @@ enum
 };
 
 /* Memory Globals */
-#ifndef MAIN_FILE
-#define IS_EXTERN extern
-#else /* MAIN_FILE */
-#define IS_EXTERN
-#endif /* MAIN_FILE */
-IS_EXTERN uint8_t memory[MEMSIZE];
-IS_EXTERN uint32_t reg_gp[REG_GP_COUNT];
-IS_EXTERN uint32_t reg_pc[REG_PC_COUNT];
-#undef IS_EXTERN
+extern uint8_t memory[MEMSIZE];
+extern uint32_t reg_gp[REG_GP_COUNT];
+extern uint32_t reg_pc[REG_PC_COUNT];
 
 int mem_init (char const *mem_path);
-int reg_init (char const *reg_path);
 int mem_save (char const *mem_path);
 int reg_save (char const *reg_path);
-
 int mem_print (size_t size);
 int reg_print (void);
 

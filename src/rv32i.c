@@ -1,5 +1,3 @@
-#define MAIN_FILE
-
 #include <stdint.h>
 #include <stdio.h>
 #include "memory.h"
@@ -8,12 +6,11 @@
 int
 main (int argc, char const **argv)
 {
-  if (argc != 4)
+  if (argc != 2 && argc != 3)
     {
-      printf ("Usage: %s mem.bin reg.bin 0x0\n"
-              "  mem.bin - path to hex dump of memory,\n"
-              "  reg.bin - path to hex dump of registers\n"
-              "  0x0     - PC (instruction pointer)\n",
+      printf ("Usage: %s image.bin [pc]\n"
+              "  image.bin - path to flat memory image\n"
+              "  pc        - optional start PC (default: 0x80000000)\n",
               argv[0]);
       return -1;
     }
@@ -24,13 +21,8 @@ main (int argc, char const **argv)
       return -1;
     }
 
-  if (reg_init (argv[2]) < 0)
-    {
-      printf ("failed to read registers\n");
-      return -1;
-    }
-
-  if (sscanf (argv[3], "%x", reg_pc) != 1)
+  reg_pc[0] = MEMBASE;
+  if (argc == 3 && sscanf (argv[2], "%x", reg_pc) != 1)
     {
       printf ("failed to get PC\n");
       return -1;
@@ -41,7 +33,9 @@ main (int argc, char const **argv)
 
   while (1)
     {
-      if (fetch (memory + reg_pc[0]))
+      if (!ADDR_IS_VALID (reg_pc[0]))
+        break;
+      if (fetch (memory + ADDR_TO_IDX (reg_pc[0])))
         break;
     };
 
