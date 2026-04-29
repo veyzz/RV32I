@@ -57,6 +57,13 @@ The script assembles `.s` into a flat image, runs the emulator, and saves:
 - `output/<program>.regsave.bin`
 
 Note: add `.word 0` at the end of your program to stop execution.
+
+Example:
+
+```bash
+./scripts/run-asm.sh examples/asm/example_sum_1_to_10.s
+```
+
 Cleanup output manually:
 
 ```bash
