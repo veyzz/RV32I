@@ -15,13 +15,15 @@ rule link_debug
 
 build ${builddir}/release/memory.o: cc src/memory.c
 build ${builddir}/release/hart.o: cc src/hart.c
+build ${builddir}/release/proxy.o: cc src/proxy.c
 build ${builddir}/release/rv32i.o: cc src/rv32i.c
-build ${builddir}/release/rv32i: link ${builddir}/release/rv32i.o ${builddir}/release/hart.o ${builddir}/release/memory.o
+build ${builddir}/release/rv32i: link ${builddir}/release/rv32i.o ${builddir}/release/hart.o ${builddir}/release/memory.o ${builddir}/release/proxy.o
 
 build ${builddir}/debug/memory.o: cc_debug src/memory.c
 build ${builddir}/debug/hart.o: cc_debug src/hart.c
+build ${builddir}/debug/proxy.o: cc_debug src/proxy.c
 build ${builddir}/debug/rv32i.o: cc_debug src/rv32i.c
-build ${builddir}/debug/rv32i: link_debug ${builddir}/debug/rv32i.o ${builddir}/debug/hart.o ${builddir}/debug/memory.o
+build ${builddir}/debug/rv32i: link_debug ${builddir}/debug/rv32i.o ${builddir}/debug/hart.o ${builddir}/debug/memory.o ${builddir}/debug/proxy.o
 
 rule as
   command = riscv32-unknown-elf-as -march=rv32i $in -o $out
@@ -66,6 +68,8 @@ build ${builddir}/tests/bgeu.o:        as tests/asm/bgeu.s
 build ${builddir}/tests/jal.o:         as tests/asm/jal.s
 build ${builddir}/tests/jalr.o:        as tests/asm/jalr.s
 build ${builddir}/tests/jalr_misaligned_fault.o: as tests/asm/jalr_misaligned_fault.s
+build ${builddir}/tests/ecall_exit_proxy.o: as tests/asm/ecall_exit_proxy.s
+build ${builddir}/tests/ecall_write_proxy.o: as tests/asm/ecall_write_proxy.s
 build ${builddir}/tests/lui.o:         as tests/asm/lui.s
 build ${builddir}/tests/auipc.o:       as tests/asm/auipc.s
 build ${builddir}/tests/chain.o:       as tests/asm/chain.s
@@ -118,6 +122,8 @@ build ${builddir}/tests/bgeu.bin:           objcopy_bin ${builddir}/tests/bgeu.o
 build ${builddir}/tests/jal.bin:            objcopy_bin ${builddir}/tests/jal.o
 build ${builddir}/tests/jalr.bin:           objcopy_bin ${builddir}/tests/jalr.o
 build ${builddir}/tests/jalr_misaligned_fault.bin: objcopy_bin ${builddir}/tests/jalr_misaligned_fault.o
+build ${builddir}/tests/ecall_exit_proxy.bin: objcopy_bin ${builddir}/tests/ecall_exit_proxy.o
+build ${builddir}/tests/ecall_write_proxy.bin: objcopy_bin ${builddir}/tests/ecall_write_proxy.o
 build ${builddir}/tests/lui.bin:            objcopy_bin ${builddir}/tests/lui.o
 build ${builddir}/tests/auipc.bin:          objcopy_bin ${builddir}/tests/auipc.o
 build ${builddir}/tests/chain.bin:          objcopy_bin ${builddir}/tests/chain.o
@@ -176,6 +182,8 @@ build test: run_tests tests/runner.py | ${builddir}/debug/rv32i $
     ${builddir}/tests/jal.bin $
     ${builddir}/tests/jalr.bin $
     ${builddir}/tests/jalr_misaligned_fault.bin $
+    ${builddir}/tests/ecall_exit_proxy.bin $
+    ${builddir}/tests/ecall_write_proxy.bin $
     ${builddir}/tests/lui.bin $
     ${builddir}/tests/auipc.bin $
     ${builddir}/tests/chain.bin $

@@ -2,11 +2,14 @@
 #include <stdio.h>
 #include "memory.h"
 #include "hart.h"
+#include "proxy.h"
 
 int
 main (int argc, char const **argv)
 {
+  int32_t exit_code;
   int fetch_ret;
+  int proxy_action;
 
   if (argc != 2 && argc != 3)
     {
@@ -44,7 +47,11 @@ main (int argc, char const **argv)
           switch (fetch_ret)
             {
               case FETCH_TRAP_ECALL:
-                printf ("stop: trap ecall at PC=0x%08x\n", reg_pc[0]);
+                proxy_action = proxy_ecall (&exit_code);
+                if (proxy_action == PROXY_CONTINUE)
+                  continue;
+                printf ("stop: proxy exit code=%d at PC=0x%08x\n", exit_code,
+                        reg_pc[0]);
                 break;
 
               case FETCH_TRAP_EBREAK:
@@ -64,6 +71,7 @@ main (int argc, char const **argv)
         }
     };
 
+  printf ("\n");
   mem_print (32);
   printf ("\n");
   reg_print ();
