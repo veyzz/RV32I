@@ -6,7 +6,8 @@
 int
 fetch (uint8_t *ip)
 {
-  uint32_t instr = *(uint32_t *)ip;
+  uint32_t instr;
+  memcpy (&instr, ip, sizeof (instr));
 
   reg_gp[REG_X0] = 0;
 
@@ -201,15 +202,21 @@ fetch (uint8_t *ip)
               case RV_F3_MEM_H:
                 if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 1))
                   return FETCH_FAULT;
-                reg_gp[GET_RD (instr)] = *(int16_t *)(memory
-                                                      + ADDR_TO_IDX (addr));
+                {
+                  int16_t val;
+                  memcpy (&val, memory + ADDR_TO_IDX (addr), sizeof (val));
+                  reg_gp[GET_RD (instr)] = (uint32_t)val;
+                }
                 break;
 
               case RV_F3_MEM_W:
                 if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 3))
                   return FETCH_FAULT;
-                reg_gp[GET_RD (instr)] = *(uint32_t *)(memory
-                                                       + ADDR_TO_IDX (addr));
+                {
+                  uint32_t val;
+                  memcpy (&val, memory + ADDR_TO_IDX (addr), sizeof (val));
+                  reg_gp[GET_RD (instr)] = val;
+                }
                 break;
 
               case RV_F3_MEM_BU:
@@ -222,8 +229,11 @@ fetch (uint8_t *ip)
               case RV_F3_MEM_HU:
                 if (!ADDR_IS_VALID (addr) || !ADDR_IS_VALID (addr + 1))
                   return FETCH_FAULT;
-                reg_gp[GET_RD (instr)] = *(uint16_t *)(memory
-                                                       + ADDR_TO_IDX (addr));
+                {
+                  uint16_t val;
+                  memcpy (&val, memory + ADDR_TO_IDX (addr), sizeof (val));
+                  reg_gp[GET_RD (instr)] = (uint32_t)val;
+                }
                 break;
 
               default:
@@ -273,6 +283,8 @@ fetch (uint8_t *ip)
               if (reg_gp[GET_RS1 (instr)] == reg_gp[GET_RS2 (instr)])
                 {
                   pc_next = pc_cur + GET_IMM_B (instr);
+                  if ((pc_next & 0x3U) != 0)
+                    return FETCH_FAULT;
                 }
               break;
 
@@ -280,6 +292,8 @@ fetch (uint8_t *ip)
               if (reg_gp[GET_RS1 (instr)] != reg_gp[GET_RS2 (instr)])
                 {
                   pc_next = pc_cur + GET_IMM_B (instr);
+                  if ((pc_next & 0x3U) != 0)
+                    return FETCH_FAULT;
                 }
               break;
 
@@ -288,6 +302,8 @@ fetch (uint8_t *ip)
                   < (int32_t)reg_gp[GET_RS2 (instr)])
                 {
                   pc_next = pc_cur + GET_IMM_B (instr);
+                  if ((pc_next & 0x3U) != 0)
+                    return FETCH_FAULT;
                 }
               break;
 
@@ -296,6 +312,8 @@ fetch (uint8_t *ip)
                   >= (int32_t)reg_gp[GET_RS2 (instr)])
                 {
                   pc_next = pc_cur + GET_IMM_B (instr);
+                  if ((pc_next & 0x3U) != 0)
+                    return FETCH_FAULT;
                 }
               break;
 
@@ -303,6 +321,8 @@ fetch (uint8_t *ip)
               if (reg_gp[GET_RS1 (instr)] < reg_gp[GET_RS2 (instr)])
                 {
                   pc_next = pc_cur + GET_IMM_B (instr);
+                  if ((pc_next & 0x3U) != 0)
+                    return FETCH_FAULT;
                 }
               break;
 
@@ -310,6 +330,8 @@ fetch (uint8_t *ip)
               if (reg_gp[GET_RS1 (instr)] >= reg_gp[GET_RS2 (instr)])
                 {
                   pc_next = pc_cur + GET_IMM_B (instr);
+                  if ((pc_next & 0x3U) != 0)
+                    return FETCH_FAULT;
                 }
               break;
 
@@ -322,6 +344,8 @@ fetch (uint8_t *ip)
 
         reg_gp[GET_RD (instr)] = pc_cur + sizeof (uint32_t);
         pc_next = pc_cur + GET_IMM_J (instr);
+        if ((pc_next & 0x3U) != 0)
+          return FETCH_FAULT;
         break;
 
       case RV_OP_JALR:
@@ -331,6 +355,8 @@ fetch (uint8_t *ip)
             case RV_F3_JALR:
               reg_gp[GET_RD (instr)] = pc_cur + sizeof (uint32_t);
               pc_next = (reg_gp[GET_RS1 (instr)] + GET_IMM_I (instr)) & ~1U;
+              if ((pc_next & 0x3U) != 0)
+                return FETCH_FAULT;
               break;
 
             default:
